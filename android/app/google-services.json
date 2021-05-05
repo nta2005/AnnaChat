@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "943159396728",
+    "firebase_url": "https://annachat-11233-default-rtdb.firebaseio.com",
+    "project_id": "annachat-11233",
+    "storage_bucket": "annachat-11233.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943159396728:android:342d34ab4f8e3b9392608d",
+        "android_client_info": {
+          "package_name": "com.nta.anna_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "943159396728-mrjpjr2eg617qg5ir51g2osbs4fv0ghu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiG8ZCYmDmtiC_isTOlNJP6m7w7dczY3M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "943159396728-mrjpjr2eg617qg5ir51g2osbs4fv0ghu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
