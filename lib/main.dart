@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:anna_chat/const/const.dart';
+import 'package:anna_chat/model/user_model.dart';
 import 'package:anna_chat/screen/chat_screen.dart';
 import 'package:anna_chat/screen/register_screen.dart';
 import 'package:anna_chat/ultils/ultils.dart';
@@ -41,7 +44,7 @@ class MyApp extends StatelessWidget {
                 settings: settings);
             break;
 
-            case '/detail':
+          case '/detail':
             return PageTransition(
                 child: DetailScreen(
                     app: app,
@@ -79,6 +82,8 @@ class _MyHomePageState extends State<MyHomePage>
   FirebaseDatabase database;
 
   bool isUserInit = false;
+
+  UserModel userLogged;
 
   final List<Tab> tabs = <Tab>[
     Tab(
@@ -178,6 +183,7 @@ class _MyHomePageState extends State<MyHomePage>
             .then((snapshot) {
           if (snapshot != null && snapshot.value != null) {
             setState(() {
+              
               isUserInit = true;
             });
           } else {
