@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:anna_chat/model/user_model.dart';
+import 'package:anna_chat/state/state_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart' as FirebaseAuth;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Widget loadPeople(DatabaseReference peopleRef) {
   return StreamBuilder(
@@ -24,7 +26,10 @@ Widget loadPeople(DatabaseReference peopleRef) {
           itemCount: userModels.length,
           itemBuilder: (context, index) {
             return GestureDetector(
-              onTap: () {},
+              onTap: () {
+                context.read(chatUser).state = userModels[index];
+                Navigator.pushNamed(context, '/detail');
+              },
               child: Column(
                 children: [
                   ListTile(

@@ -7,3 +7,10 @@ void showOnlySnackBar(BuildContext context, String message) {
     ),
   );
 }
+
+String getRoomId(String a, String b) {
+  if (a.compareTo(b) > 0)
+    return a + b;
+  else
+    return b + a;
+}
