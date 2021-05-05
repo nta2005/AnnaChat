@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:anna_chat/const/const.dart';
 import 'package:anna_chat/model/user_model.dart';
 import 'package:anna_chat/screen/chat_screen.dart';

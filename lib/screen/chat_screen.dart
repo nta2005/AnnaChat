@@ -181,12 +181,12 @@ class DetailScreen extends ConsumerWidget {
 
   void appendChat(BuildContext context, ChatMessage chatMessage,
       int estimatedServerTimeInMs) {
-    var update_data = Map<String, dynamic>();
-    update_data['lastUpdate'] = estimatedServerTimeInMs;
+    var updateData = Map<String, dynamic>();
+    updateData['lastUpdate'] = estimatedServerTimeInMs;
     if (chatMessage.picture)
-      update_data['lastMessage'] = '<Image>';
+      updateData['lastMessage'] = '<Image>';
     else
-      update_data['lastMessage'] = chatMessage.content;
+      updateData['lastMessage'] = chatMessage.content;
 
     // Update
     database
@@ -194,7 +194,7 @@ class DetailScreen extends ConsumerWidget {
         .child(CHATLIST_REF)
         .child(user.uid) //You
         .child(context.read(chatUser).state.uid) //Friend
-        .update(update_data)
+        .update(updateData)
         .then((value) {
       //Copy to friend
       database
@@ -202,7 +202,7 @@ class DetailScreen extends ConsumerWidget {
           .child(CHATLIST_REF)
           .child(context.read(chatUser).state.uid) //Friend
           .child(user.uid) //You
-          .update(update_data)
+          .update(updateData)
           .then((value) {
         //Add to ChatREF
         chatRef.push().set(<String, dynamic>{

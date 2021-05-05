@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:anna_chat/model/user_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 void showOnlySnackBar(BuildContext context, String message) {
