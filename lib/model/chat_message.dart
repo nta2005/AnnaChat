@@ -23,14 +23,14 @@ class ChatMessage {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['timeStamp'] = timeStamp;
-    data['senderId'] = senderId;
     data['name'] = name;
+    data['senderId'] = senderId;
     data['content'] = content;
     data['picture'] = picture;
-    data['uid'] = uid;
     data['pictureLink'] = pictureLink;
+    data['uid'] = uid;
     return data;
   }
 }

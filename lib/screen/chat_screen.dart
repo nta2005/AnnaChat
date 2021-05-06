@@ -86,7 +86,7 @@ class DetailScreen extends ConsumerWidget {
                           offsetRef.once().then((DataSnapshot snapshot) {
                             var offset = snapshot.value as int;
                             var estimatedServerTimeInMs =
-                                DateTime.now().microsecondsSinceEpoch + offset;
+                                DateTime.now().millisecondsSinceEpoch + offset;
 
                             submitChat(context, estimatedServerTimeInMs);
                           });
@@ -117,7 +117,7 @@ class DetailScreen extends ConsumerWidget {
   }
 
   void submitChat(BuildContext context, int estimatedServerTimeInMs) {
-    ChatMessage chatMessage = new ChatMessage();
+    ChatMessage chatMessage = ChatMessage();
     chatMessage.name = createName(context.read(userLogged).state);
     chatMessage.content = textEditingController.text;
     chatMessage.timeStamp = estimatedServerTimeInMs;
