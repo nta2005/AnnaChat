@@ -12,8 +12,8 @@ class ChatInfo {
       this.createDate});
 
   ChatInfo.fromJson(Map<String, dynamic> json) {
-    friendName = json['friendName ='];
     friendId = json['friendId'];
+    friendName = json['friendName'];
     createId = json['createId'];
     lastMessage = json['lastMessage'];
     createName = json['createName'];

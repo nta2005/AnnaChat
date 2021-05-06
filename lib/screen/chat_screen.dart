@@ -133,8 +133,6 @@ class DetailScreen extends ConsumerWidget {
     chatRef.once().then((DataSnapshot snapshot) {
       if (snapshot != null)
         //If user already create chat before
-        appendChat(context, chatMessage, estimatedServerTimeInMs);
-      else
         createChat(context, chatMessage, estimatedServerTimeInMs);
     });
   }
@@ -147,17 +145,40 @@ class DetailScreen extends ConsumerWidget {
         friendName: createName(context.read(chatUser).state),
         friendId: context.read(chatUser).state.uid,
         createName: createName(context.read(userLogged).state),
-        lastMessage: chatMessage.picture ? '<Image>' : chatMessage.content);
+        lastMessage: chatMessage.picture ? '<Image>' : chatMessage.content,
+        lastUpdate: DateTime.now().millisecondsSinceEpoch,
+        createDate: DateTime.now().millisecondsSinceEpoch);
 
     //Add on firebase
-    database.reference().child(CHATLIST_REF).child(user.uid).set(<String,
-        ChatInfo>{context.read(chatUser).state.uid: chatInfo}).then((value) {
+    database
+        .reference()
+        .child(CHATLIST_REF)
+        .child(user.uid)
+        .child(context.read(chatUser).state.uid)
+        .set(<String, dynamic>{
+      'lastUpdate': chatInfo.lastUpdate,
+      'lastMessage': chatInfo.lastMessage,
+      'createId': chatInfo.createId,
+      'friendId': chatInfo.friendId,
+      'createName': chatInfo.createName,
+      'friendName': chatInfo.friendName,
+      'createDate': chatInfo.createDate,
+    }).then((value) {
       //After success copy to Friend chatlist
       database
           .reference()
           .child(CHATLIST_REF)
           .child(context.read(chatUser).state.uid)
-          .set(<String, ChatInfo>{user.uid: chatInfo}).then((value) {
+          .child(user.uid)
+          .set(<String, dynamic>{
+        'lastUpdate': chatInfo.lastUpdate,
+        'lastMessage': chatInfo.lastMessage,
+        'createId': chatInfo.createId,
+        'friendId': chatInfo.friendId,
+        'createName': chatInfo.createName,
+        'friendName': chatInfo.friendName,
+        'createDate': chatInfo.createDate,
+      }).then((value) {
         //After success, add on Chat Reference
         chatRef.push().set(<String, dynamic>{
           'uid': chatMessage.uid,
@@ -175,53 +196,7 @@ class DetailScreen extends ConsumerWidget {
         }).catchError((e) => showOnlySnackBar(context, 'Error submit chatRef'));
       }).catchError((e) =>
               showOnlySnackBar(context, 'Error can\'t submit Friend ChatList'));
-    }).catchError(
-        (e) => showOnlySnackBar(context, 'Error can\'t submit User ChatList'));
-  }
-
-  void appendChat(BuildContext context, ChatMessage chatMessage,
-      int estimatedServerTimeInMs) {
-    var updateData = Map<String, dynamic>();
-    updateData['lastUpdate'] = estimatedServerTimeInMs;
-    if (chatMessage.picture)
-      updateData['lastMessage'] = '<Image>';
-    else
-      updateData['lastMessage'] = chatMessage.content;
-
-    // Update
-    database
-        .reference()
-        .child(CHATLIST_REF)
-        .child(user.uid) //You
-        .child(context.read(chatUser).state.uid) //Friend
-        .update(updateData)
-        .then((value) {
-      //Copy to friend
-      database
-          .reference()
-          .child(CHATLIST_REF)
-          .child(context.read(chatUser).state.uid) //Friend
-          .child(user.uid) //You
-          .update(updateData)
-          .then((value) {
-        //Add to ChatREF
-        chatRef.push().set(<String, dynamic>{
-          'uid': chatMessage.uid,
-          'name': chatMessage.name,
-          'content': chatMessage.content,
-          'pictureLink': chatMessage.pictureLink,
-          'picture': chatMessage.picture,
-          'senderId': chatMessage.senderId,
-          'timeStamp': chatMessage.timeStamp,
-        }).then((value) {
-          //Clear text content
-          textEditingController.text = '';
-          //Auto scroll
-          autoScrollReverse(scrollController);
-        }).catchError((e) => showOnlySnackBar(context, 'Error submit chatRef'));
-      }).catchError((e) =>
-              showOnlySnackBar(context, 'Can\'t update Friend ChatList'));
-    }).catchError(
-            (e) => showOnlySnackBar(context, 'Can\'t update User ChatList'));
+    }).catchError((e) =>
+            showOnlySnackBar(context, 'Error can\'t submit User ChatList'));
   }
 }

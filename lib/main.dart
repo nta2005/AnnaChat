@@ -134,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage>
                 if (tab.text == 'Chat')
                   return loadChatList(database, chatListRef);
                 else
-                  return loadPeople(peopleRef);
+                  return loadPeople(database,peopleRef);
               }).toList())
           : Center(
               child: CircularProgressIndicator(),
