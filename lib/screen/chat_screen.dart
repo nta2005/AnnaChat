@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:anna_chat/const/const.dart';
 import 'package:anna_chat/model/chat_info.dart';
 import 'package:anna_chat/model/chat_message.dart';
+import 'package:anna_chat/screen/camera_screen.dart';
 import 'package:anna_chat/state/state_manager.dart';
 import 'package:anna_chat/ultils/ultils.dart';
 import 'package:anna_chat/widgets/bubble.dart';
@@ -12,6 +14,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sliding_sheet/sliding_sheet.dart';
 
 // ignore: must_be_immutable
 class DetailScreen extends ConsumerWidget {
@@ -28,6 +31,9 @@ class DetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, watch) {
     var friendUser = watch(chatUser).state;
+
+    var isShowPicture = watch(isCapture).state;
+
     return Scaffold(
       appBar: AppBar(
           centerTitle: true,
@@ -67,37 +73,79 @@ class DetailScreen extends ConsumerWidget {
                         )
                       : Center(child: CircularProgressIndicator())),
               Expanded(
-                flex: 1,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        keyboardType: TextInputType.multiline,
-                        expands: true,
-                        minLines: null,
-                        maxLines: null,
-                        decoration:
-                            InputDecoration(hintText: 'Enter your message'),
-                        controller: textEditingController,
-                      ),
-                    ),
-                    IconButton(
-                        onPressed: () {
-                          offsetRef.once().then((DataSnapshot snapshot) {
-                            var offset = snapshot.value as int;
-                            var estimatedServerTimeInMs =
-                                DateTime.now().millisecondsSinceEpoch + offset;
+                  flex: isShowPicture ? 2 : 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      isShowPicture
+                          ? Container(
+                              width: 80,
+                              height: 80,
+                              child: Stack(
+                                children: [
+                                  Image.file(
+                                      File(context
+                                          .read(thumbnailImage)
+                                          .state
+                                          .path),
+                                      fit: BoxFit.fill),
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: IconButton(
+                                        onPressed: () {
+                                          context.read(isCapture).state = false;
+                                        },
+                                        icon: Icon(Icons.clear,
+                                            color: Colors.black)),
+                                  )
+                                ],
+                              ),
+                            )
+                          : Container(),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            IconButton(
+                                onPressed: () {
+                                  showBottomSheetPicture(context);
+                                },
+                                icon: Icon(Icons.add_a_photo)),
+                            Expanded(
+                              child: TextField(
+                                keyboardType: TextInputType.multiline,
+                                expands: true,
+                                minLines: null,
+                                maxLines: null,
+                                decoration: InputDecoration(
+                                    hintText: 'Enter your message'),
+                                controller: textEditingController,
+                              ),
+                            ),
+                            IconButton(
+                                onPressed: () {
+                                  offsetRef
+                                      .once()
+                                      .then((DataSnapshot snapshot) {
+                                    var offset = snapshot.value as int;
+                                    var estimatedServerTimeInMs =
+                                        DateTime.now().millisecondsSinceEpoch +
+                                            offset;
 
-                            submitChat(context, estimatedServerTimeInMs);
-                          });
+                                    submitChat(
+                                        context, estimatedServerTimeInMs);
+                                  });
 
-                          //Auto scroll chat layout to end
-                          autoScroll(scrollController);
-                        },
-                        icon: Icon(Icons.send))
-                  ],
-                ),
-              )
+                                  //Auto scroll chat layout to end
+                                  autoScroll(scrollController);
+                                },
+                                icon: Icon(Icons.send))
+                          ],
+                        ),
+                      )
+                    ],
+                  ))
             ],
           ),
         ),
@@ -198,5 +246,69 @@ class DetailScreen extends ConsumerWidget {
               showOnlySnackBar(context, 'Error can\'t submit Friend ChatList'));
     }).catchError((e) =>
             showOnlySnackBar(context, 'Error can\'t submit User ChatList'));
+  }
+
+  void showBottomSheetPicture(BuildContext context) async {
+    // ignore: unused_local_variable
+    final result = await showSlidingBottomSheet(context, builder: (context) {
+      return SlidingSheetDialog(
+        elevation: 8,
+        cornerRadius: 16,
+        snapSpec: const SnapSpec(
+            snap: true,
+            snappings: [0.2],
+            positioning: SnapPositioning.relativeToAvailableSpace),
+        builder: (context, state) {
+          return Container(
+            child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        await navigateCamera(context);
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.camera),
+                          SizedBox(width: 20),
+                          Text(
+                            'Camera',
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Row(
+                        children: [
+                          Icon(Icons.photo),
+                          SizedBox(width: 20),
+                          Text(
+                            'Photo',
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
+          );
+        },
+      );
+    });
+  }
+
+  navigateCamera(BuildContext context) async {
+    final result = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => MyCameraPage()));
+
+    //Set state
+    context.read(thumbnailImage).state = result;
+    context.read(isCapture).state = true;
+
+    Navigator.pop(context); //Close sliding_sheet
   }
 }
