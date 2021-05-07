@@ -43,6 +43,7 @@ dependencies:
   path_provider: any
   path: any
   sliding_sheet: any
+  uuid: any
 
 dev_dependencies:
   flutter_test:

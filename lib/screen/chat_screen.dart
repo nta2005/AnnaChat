@@ -12,9 +12,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
+import 'package:uuid/uuid.dart';
 
 // ignore: must_be_immutable
 class DetailScreen extends ConsumerWidget {
@@ -172,7 +174,10 @@ class DetailScreen extends ConsumerWidget {
     chatMessage.senderId = user.uid;
 
     //Image and text
-    chatMessage.picture = false;
+    if (context.read(isCapture).state)
+      chatMessage.picture = true;
+    else
+      chatMessage.picture = false;
     submitChatToFirebase(context, chatMessage, estimatedServerTimeInMs);
   }
 
@@ -226,22 +231,39 @@ class DetailScreen extends ConsumerWidget {
         'createName': chatInfo.createName,
         'friendName': chatInfo.friendName,
         'createDate': chatInfo.createDate,
-      }).then((value) {
-        //After success, add on Chat Reference
-        chatRef.push().set(<String, dynamic>{
-          'uid': chatMessage.uid,
-          'name': chatMessage.name,
-          'content': chatMessage.content,
-          'pictureLink': chatMessage.pictureLink,
-          'picture': chatMessage.picture,
-          'senderId': chatMessage.senderId,
-          'timeStamp': chatMessage.timeStamp,
-        }).then((value) {
-          //Clear text content
-          textEditingController.text = '';
-          //Auto scroll
-          autoScrollReverse(scrollController);
-        }).catchError((e) => showOnlySnackBar(context, 'Error submit chatRef'));
+      }).then((value) async {
+        if (chatMessage.picture) {
+          //Upload picture
+          var pictureName = Uuid().v1();
+
+          FirebaseStorage storage = FirebaseStorage.instanceFor(app: app);
+          Reference ref =
+              storage.ref().child('images').child('$pictureName.jpg');
+          final metaData = SettableMetadata(
+              contentType: 'image/jpeg',
+              customMetadata: {
+                'picked-file-path': context.read(thumbnailImage).state.path
+              });
+          var filePath = context.read(thumbnailImage).state.path;
+          File file = new File(filePath);
+          var task = await uploadFile(ref, metaData, file);
+          task.whenComplete(() {
+            //When upload done, we will get download url to submit chat
+            storage
+                .ref()
+                .child('images/$pictureName.jpg')
+                .getDownloadURL()
+                .then((value) {
+              //After success, add on Chat Reference
+              chatMessage.pictureLink = value; //Add value to link
+              writeChatToFirebase(context, chatRef, chatMessage);
+            });
+          });
+        } else {
+          //If only text
+          //After success, add on Chat Reference
+          writeChatToFirebase(context, chatRef, chatMessage);
+        }
       }).catchError((e) =>
               showOnlySnackBar(context, 'Error can\'t submit Friend ChatList'));
     }).catchError((e) =>
@@ -310,5 +332,31 @@ class DetailScreen extends ConsumerWidget {
     context.read(isCapture).state = true;
 
     Navigator.pop(context); //Close sliding_sheet
+  }
+
+  Future<UploadTask> uploadFile(
+      Reference ref, SettableMetadata metaData, File file) async {
+    var uploadTask = ref.putData(await file.readAsBytes(), metaData);
+    return Future.value(uploadTask);
+  }
+
+  void writeChatToFirebase(BuildContext context, DatabaseReference chatRef,
+      ChatMessage chatMessage) {
+    chatRef.push().set(<String, dynamic>{
+      'uid': chatMessage.uid,
+      'name': chatMessage.name,
+      'content': chatMessage.content,
+      'pictureLink': chatMessage.pictureLink,
+      'picture': chatMessage.picture,
+      'senderId': chatMessage.senderId,
+      'timeStamp': chatMessage.timeStamp,
+    }).then((value) {
+      //Clear text content
+      textEditingController.text = '';
+      //Set picture hide
+      if (chatMessage.picture) context.read(isCapture).state = false;
+      //Auto scroll
+      autoScrollReverse(scrollController);
+    }).catchError((e) => showOnlySnackBar(context, 'Error submit chatRef'));
   }
 }
