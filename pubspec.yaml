@@ -34,11 +34,15 @@ dependencies:
   firebase_auth: ^0.18.4+1
   firebase_auth_ui: any
   firebase_database: any
+  firebase_storage: any
   flutter_riverpod: any
   bubble_tab_indicator: any
   bubble: any
   page_transition: any
-  firebase_storage: any
+  camera: any
+  path_provider: any
+  path: any
+  sliding_sheet: any
 
 dev_dependencies:
   flutter_test:

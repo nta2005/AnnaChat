@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as FirebaseAuth;
 import 'package:page_transition/page_transition.dart';
-
 import 'firebase_ultils/firebase_ultils.dart';
 
 Future<void> main() async {
@@ -24,12 +23,14 @@ Future<void> main() async {
 // ignore: must_be_immutable
 class MyApp extends StatelessWidget {
   FirebaseApp app;
+
   MyApp({this.app});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Anna Chat',
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/register':
@@ -95,6 +96,7 @@ class _MyHomePageState extends State<MyHomePage>
   ];
 
   TabController tabController;
+
   @override
   void initState() {
     super.initState();
@@ -134,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage>
                 if (tab.text == 'Chat')
                   return loadChatList(database, chatListRef);
                 else
-                  return loadPeople(database,peopleRef);
+                  return loadPeople(database, peopleRef);
               }).toList())
           : Center(
               child: CircularProgressIndicator(),
@@ -181,7 +183,6 @@ class _MyHomePageState extends State<MyHomePage>
             .then((snapshot) {
           if (snapshot != null && snapshot.value != null) {
             setState(() {
-              
               isUserInit = true;
             });
           } else {
